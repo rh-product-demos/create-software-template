@@ -1,65 +1,67 @@
-# **🎯 Workshop Goal**
+# **🎯Learning Software templates using an example Quarkus Service**
 By the end of this session, participants will:
-- **Learn how to create a Red Hat Developer Hub Software Template from scratch.**
+- **Learn how to create a Red Hat Developer Hub Software Template from scratch for quarkus service.**
 - **Understand the folder structure and role of each file.**
 - **Build `template.yaml` and `catalog-info.yaml`.**
 - **Register and import services in Red Hat Developer Hub (RHDH).**
-- **Use template from RHDH Software Catalog and create repos with necessary code that developer can start using to build further.**
+- **Use the imported template from RHDH Software Catalog and create repos with necessary code that developer can start using to build further.**
 
-## 📜 Agenda
-| **Time** | **Activity** | **Why It’s Important** |
-|---------|-------------|----------------------|
-| **0-2 mins** | **Setting Context: Understanding Red Hat Developer Hub/Backstage Entities** | What are Templates and Components? (Quick, high-level intro) |
-| **2-4 mins** | **Understanding the Folder Structure** | Where do `template.yaml`, `catalog-info.yaml`, and the Quarkus skeleton fit? (Brief overview) |
-| **4-18 mins** | **Step 1: Build `template.yaml` Incrementally** | Define parameters, fetch boilerplate, create GitLab repo, register in Red Hat Developer Hub, deploy with ArgoCD. (Live coding) |
-| **18-26 mins** | **Step 2: Build `catalog-info.yaml` Incrementally** | Why does Red Hat Developer Hub need it? How does it relate to GitOps? (Live coding + quick test) |
-| **26-28 mins** | **Step 3: Importing and Registering in Red Hat Developer Hub (RHDH)** | How to manually register the service into RHDH. (Quick live demo) |
-| **28-30 mins** | **Step 4: Q&A + Customization Challenge** | Let participants tweak the template for real-world use cases. |
+---
+## 📜 **Agenda**
+| **Time** | **Activity** | **Purpose** |
+|---------|-------------|------------|
+| **0-2 mins** | **Intro to RHDH/Backstage Entities** | What are Templates and Components? (Quick overview) |
+| **2-4 mins** | **Folder Structure** | Where `template.yaml`, `catalog-info.yaml`, and the Quarkus skeleton fit. |
+| **4-18 mins** | **Step 1: Build `template.yaml`** | Define parameters, fetch boilerplate, create repo, register in RHDH, deploy with ArgoCD. (Live coding) |
+| **18-26 mins** | **Step 2: Build `catalog-info.yaml`** | Why RHDH needs it? How it connects to GitOps.|
+| **26-28 mins** | **Step 3: Register in RHDH** | Manually import the service. (Quick demo) |
+| **28-30 mins** | **Step 4: Q&A + Customization** | Let participants tweak the template. |
 
+---
 
-# 🛠 Understanding Red Hat Developer Hub/Backstage Entities Before We Start
+## 🛠 Understanding Backstage Entities Before We Start
 
-## 📌 Goal
-Before writing any code, let's understand how **Red Hat Developer Hub** organizes software components using **entities**.
+#### Before writing any code, let's understand how **Red Hat Developer Hub** organizes software components using **entities**.
 
-## What are Red Hat Developer Hub Entities?
+Everything inside **Red Hat Developer Hub (RHDH)** is considered an **entity**.  
+An **entity** represents a **real-world object** that is **registered and managed within the Software Catalog**.  
 
-Everything inside Red Hat Developer Hub is considered an **entity**. An entity represents a **real-world object**, such as:
+### **Common Entity Types in RHDH:**  
+- **A microservice** (e.g., a backend service running in production)  
+- **An API** (e.g., an OpenAPI-defined REST or GraphQL endpoint)  
+- **A CI/CD pipeline** (e.g., Tekton or GitHub Actions workflows)  
+- **A team or user group** (e.g., an organizational unit managing services)  
 
-- A **microservice**
-- An **API**
-- A **CI/CD pipeline**
-- A **team or user group**
+Entities in **Red Hat Developer Hub** are defined using **YAML files**, specifically `catalog-info.yaml`, which RHDH reads to organize components in the **Software Catalog**.  
 
-Entities in Red Hat Developer Hub are defined using **YAML files**, which Red Hat Developer Hub reads and organizes in the **Software Catalog**.
+---
 
-## Key Entities We Will Work With
+## **Key Entities We Will Work With**  
+In this demo, we will use **three core entities**:  
 
-In this demo, we will use **three core entities**:
+| **Entity Type** | **Kind**            | **Purpose**  |  
+|----------------|-----------------|----------------------|  
+| **Template**   | `kind: Template`   | Defines how **new services are created** using a Red Hat Developer Hub form.  |  
+| **Component**  | `kind: Component`  | Represents a **runnable microservice** registered in the catalog.  |  
+| **API**        | `kind: API`        | Describes an **exposed API** that other services can use.  |  
 
-| **Entity Type**  | **Kind**         | **Purpose** |
-|------------------|-----------------|-------------|
-| **Template**     | `kind: Template` | Defines how **new services are created** from a Red Hat Developer Hub form. |
-| **Component**    | `kind: Component` | Represents a **running microservice** in Red Hat Developer Hub. |
-| **API**         | `kind: API`      | Describes an **exposed API** that other services can use. |
+---
 
+## **How Do These Work Together?**  
+- A **Template** (`kind: Template`) helps generate a **Component** (`kind: Component`).  
+- A **Component** represents a **real microservice** deployed in production.  
+- If a **Component exposes an API**, it is **linked to an API entity** (`kind: API`) in the catalog.  
 
-## How Do These Work Together?
+---
 
-**A `Template` helps generate a `Component`.**  
-**A `Component` represents a real microservice in production.**  
-**An `API` is linked to a `Component` if it provides a public API.**
+## **Example Workflow:**  
+* A **developer fills out a form** in **Red Hat Developer Hub** → The **Template** creates a **new Git repository** with Quarkus boilerplate.
+* The service is **registered as a `Component` in the catalog** and linked to a **Kubernetes deployment**.
+* If the service **exposes an API**, it is also **registered as an `API` entity** in RHDH.  
 
+**Now that we understand these concepts, let’s build our Red Hat Developer Hub Software Template step by step!**  
 
-## 📌 Example Workflow:
-
-- A **developer fills out a Red Hat Developer Hub form** → The **Template** creates a **new Git repository** with Quarkus boilerplate.
-- The service is **registered as a `Component` in Red Hat Developer Hub** and linked to a **Kubernetes deployment**.
-- If the service **exposes an API**, it is also **registered as an `API` entity** in Red Hat Developer Hub.
-
-
-🚀 **Now that we understand these concepts, let’s build our Red Hat Developer Hub Software Template step by step!**
-
+---
 # **🛠 Step 1: Setting Up the Demo**
 
 ### **Prerequisites**
@@ -69,7 +71,47 @@ Before starting, ensure you have:
 - **A working GitLab (or GitHub) instance**.
 - **ArgoCD configured** if testing deployments.
 
+# 🛠 Preparing Your Repository for Backstage Software Templates
 
+Before starting, ensure you have the following:
+
+###  1. GitHub CLI (`gh`) is Installed and Authenticated**
+
+To check if GitHub CLI is installed, run:
+
+```
+gh --version
+```
+If it’s **not installed**, follow the [GitHub CLI installation instructions](https://cli.github.com/).
+
+Now, check if you're logged into GitHub CLI:
+```sh
+gh auth status
+```
+If it says **"You are not logged in"**, run:
+```sh
+gh auth login
+```
+_(Follow the prompts to authenticate with GitHub.)_
+
+## Step 1: Fork and Clone the Repository
+
+### 1. Run the following command to fork and clone the repository:
+```sh
+gh repo fork rh-product-demos/create-software-template --clone --remote
+```
+#### **What This Does:**
+- **Creates a fork** under your GitHub account (e.g., `your-github-username/create-software-template`).
+- **Clones your fork to your local machine**.
+- **Automatically sets up `origin` as your fork**.
+
+### 2. Move into the cloned repository:
+```sh
+cd create-software-template
+```
+---
+**At this point, you have a repository with an empty `template.yaml` and `catalog-info.yaml`, ready to build your Backstage Software Template.**
+---
 
 #  🛠 Understanding the Folder Structure
 
@@ -98,14 +140,22 @@ The folder structure beloew represents a an example software template and in thi
 
 
 ```
+---
+### **A quick overview of `template.yaml`?**
+The Software Templates part of Backstage is a tool that can help you create Components inside Backstage. By default, it has the ability to load skeletons of code, template in some variables, and then publish the template to some locations like GitHub or GitLab.
 
+Templates are stored in the Software Catalog under a kind Template. You can create your own templates with a small yaml definition which describes the template and its metadata, along with some input variables that your template will need, and then a list of actions which are then executed by the scaffolding service.
+---
 ## **🛠 Step 2: Start with a Blank `template.yaml`**
-📌 **Goal**: Explain that Red Hat Developer Hub uses templates to scaffold services and that we will **incrementally build `template.yaml`**.
+**Goal**: Explain that Red Hat Developer Hub uses templates to scaffold services and that we will **incrementally build `template.yaml`**.
 
 ### **Instructions**
 1. Open **VS Code** and navigate to your Red Hat Developer Hub Software template repository.
 2. **Create a new file**: `template.yaml`
 3. **Start with a blank template** and **add basic comments**:
+
+
+
 
 ```yaml
 # Red Hat Developer Hub Software Template Definition
@@ -138,10 +188,11 @@ spec:
   - **`title` & `description`** → Human-readable details.
   - **`tags`** → Helps categorize and filter templates in the Red Hat Developer Hub UI.
 
-🚀 **In short:** `template.yaml` tells Red Hat Developer Hub **what to create, how to create it, and what metadata to assign** in the Software Catalog.
+ **In short:** `template.yaml` tells Red Hat Developer Hub **what to create, how to create it, and what metadata to assign** in the Software Catalog.
 
+---
 ## **🛠 Step 3: Define User Input Parameters**
-📌 **Goal**: Collect user input for the service.
+ **Goal**: Collect user input for the service.
 
 ### **Instructions**
 1. **Add the parameters section**:
@@ -178,13 +229,13 @@ spec:
 - It ensures **naming consistency** by validating the input against Red Hat Developer Hub's **naming rules**.  
 - This prevents **duplicate names** or incorrect formats before a service is created.  
 
-🚀 **In short:** `parameters` make templates flexible, and `EntityNamePicker` ensures valid service names.
+**In short:** `parameters` make templates flexible, and `EntityNamePicker` ensures valid service names.
 
 **⏩ Test It in RHDH Template editor ** → Paste the template and check the form UI.
 
 
 ## **🛠 Step 4: Fetch Quarkus Boilerplate Code**
-📌 **Goal**: Copy a **predefined Quarkus project**.
+**Goal**: Copy a **predefined Quarkus project**.
 
 ```yaml
   steps:
@@ -210,11 +261,11 @@ spec:
 - When a user fills out the **Red Hat Developer Hub form**, the value of `component_id` is dynamically **substituted** in places like file paths, names, or configurations.  
 - This ensures that **each service has a unique name** based on the user’s input.  
 
-🚀 **In short:** `fetch:template` automates code scaffolding, and `${{ parameters.component_id }}` dynamically customizes the generated service.
+**In short:** `fetch:template` automates code scaffolding, and `${{ parameters.component_id }}` dynamically customizes the generated service.
 
 
 ## **🛠 Step 5: Create a Git Repository and Push Code**
-📌 **Goal**: Automatically create a **GitLab repository**.
+**Goal**: Automatically create a **GitLab repository**.
 
 ```yaml
     - id: publish
@@ -240,14 +291,14 @@ spec:
 - Example:  
   - If `sourcePath: ./generated-service`, only the contents of `generated-service/` are pushed to GitLab.  
 
-🚀 **In short:** `publish:gitlab` automates Git operations, while `sourcePath` ensures only the correct files are committed.
+**In short:** `publish:gitlab` automates Git operations, while `sourcePath` ensures only the correct files are committed.
 
 **⏩ Test It in Red Hat Developer Hub** → Run the template and check GitLab.
 
 ---
 
 ## **🛠 Step 6: Register the Service in Red Hat Developer Hub**
-📌 **Goal**: Add the service to the **Red Hat Developer Hub Software catalog**.
+**Goal**: Add the service to the **Red Hat Developer Hub Software catalog**.
 
 ```yaml
     - id: register
@@ -266,12 +317,12 @@ spec:
 
 ## **🛠 Step 6: Build `catalog-info.yaml` Incrementally**
 
-📌 **Goal**: Register the service in Red Hat Developer Hub by **building `catalog-info.yaml` step by step**.
+**Goal**: Register the service in Red Hat Developer Hub by **building `catalog-info.yaml` step by step**.
 
 
 ### **1️⃣ Start with a Blank `catalog-info.yaml`**
 
-📌 **Why?** Every service created by Red Hat Developer Hub **must be registered** in the catalog.
+**Why?** Every service created by Red Hat Developer Hub **must be registered** in the catalog.
 
 #### **Instructions**
 
@@ -303,7 +354,7 @@ spec:
 
 ### **2️⃣ Add Metadata (Description & Tags)**
 
-📌 **Why?** Helps users **identify** and **search** for the service.
+**Why?** Helps users **identify** and **search** for the service.
 
 #### **Update `metadata` section**:
 
@@ -330,7 +381,7 @@ metadata:
 
 ### **3️⃣ Add Annotations for GitOps and CI/CD**
 
-📌 **Why?** These annotations **link Red Hat Developer Hub to GitLab, ArgoCD, and Kubernetes**.
+**Why?** These annotations **link Red Hat Developer Hub to GitLab, ArgoCD, and Kubernetes**.
 
 #### **Update `annotations` section**:
 
@@ -357,7 +408,7 @@ metadata:
 
 ### **4️⃣ Add Developer Links for OpenShift Dev Spaces**
 
-📌 **Why?** Allows developers to **open the service directly in VS Code or JetBrains**.
+**Why?** Allows developers to **open the service directly in VS Code or JetBrains**.
 
 #### **Update `links` section**:
 
